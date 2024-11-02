@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-import { Search } from "lucide-react"
+
 import { ref, get, push, set } from "firebase/database"
 import { database } from '@/lib/firebase'
 
@@ -48,7 +48,7 @@ export function ProductEntryForm() {
         } else {
           setProducts([])
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error fetching data:', error)
       }
     }

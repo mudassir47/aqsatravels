@@ -400,7 +400,7 @@ const DashboardContent: React.FC = () => {
         {/* Today's Sell List */}
         <Card>
           <CardHeader>
-            <CardTitle>Today's Sell List</CardTitle>
+            <CardTitle>Todays Sell List</CardTitle>
           </CardHeader>
           <CardContent>
             {todaySells.length > 0 ? (

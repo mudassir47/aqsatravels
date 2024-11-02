@@ -63,7 +63,7 @@ export function ServiceForm() {
       setServiceName('')
       setServiceDescription('')
       setServicePrice('')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error adding service:', error)
       setMessage({ type: 'error', text: 'Failed to add service. Please try again.' })
     }

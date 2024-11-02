@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { auth } from '../../lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation'; // For Next.js 13 app directory
-// For older Next.js versions, use: import { useRouter } from 'next/router';
+import { FirebaseError } from 'firebase/app'; // Import FirebaseError
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState<string>('');
@@ -21,8 +21,12 @@ const LoginPage: React.FC = () => {
       await signInWithEmailAndPassword(auth, email, password);
       // Redirect to dashboard or home page after successful login
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      if (err instanceof FirebaseError) {
+        setError(err.message); // Handle Firebase-specific error messages
+      } else {
+        setError('An unexpected error occurred.'); // Handle unexpected errors
+      }
     }
   };
 
@@ -74,7 +78,7 @@ const LoginPage: React.FC = () => {
           </div>
         </form>
         <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
+          Dont have an account?{' '}
           <a href="/signup" className="text-blue-600 hover:text-blue-500">
             Sign up
           </a>

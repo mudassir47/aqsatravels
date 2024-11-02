@@ -86,14 +86,14 @@ const ServiceSalesPage: React.FC = () => {
                 variant={filter === 'today' ? 'default' : 'outline'}
                 className={filter === 'today' ? 'bg-[#0a1963] hover:bg-[#0c1d7a] text-white' : ''}
               >
-                Today's Sales
+                Todays Sales
               </Button>
               <Button
                 onClick={() => setFilter('month')}
                 variant={filter === 'month' ? 'default' : 'outline'}
                 className={filter === 'month' ? 'bg-[#0a1963] hover:bg-[#0c1d7a] text-white' : ''}
               >
-                This Month's Sales
+                This Months Sales
               </Button>
             </div>
             {filteredSales.length > 0 ? (
