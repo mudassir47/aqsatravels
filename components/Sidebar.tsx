@@ -34,6 +34,7 @@ const navLinks: NavLink[] = [
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const pathname = usePathname();
 
+  
   return (
     <aside
       className={`bg-[#0a1963] text-white w-64 min-h-screen transition-transform duration-300 transform overflow-y-auto ${
