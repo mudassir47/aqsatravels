@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
+import axios from 'axios'
 
 import { ref, get, push, set } from "firebase/database"
 import { database } from '@/lib/firebase'
@@ -105,6 +105,12 @@ export function ProductEntryForm() {
 
     try {
       await set(newSellRef, sellData)
+
+      // Send WhatsApp message if phone number is provided
+      if (phoneNumber.trim()) {
+        await sendWhatsAppMessage(selectedProduct.description, phoneNumber)
+      }
+
       setMessage({ type: 'success', text: "Product sold successfully." })
       // Reset form
       setSelectedProduct(null)
@@ -117,6 +123,21 @@ export function ProductEntryForm() {
     }
   }
 
+  const sendWhatsAppMessage = async (message: string, phoneNumber: string) => {
+    try {
+      const response = await axios.post('http://localhost:5000/send-message', {
+        phoneNumber,
+        message,
+      });
+      if (response.data.success) {
+        console.log('Message sent successfully');
+      }
+    } catch (error) {
+      console.error('Error sending WhatsApp message:', error);
+      setMessage({ type: 'error', text: "Failed to send WhatsApp message." });
+    }
+  }
+
   return (
     <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
       <Card className="max-w-2xl mx-auto">
@@ -126,11 +147,7 @@ export function ProductEntryForm() {
         <CardContent className="pt-6">
           {message && (
             <div
-              className={`mb-4 p-2 text-sm rounded ${
-                message.type === 'success'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-red-100 text-red-800'
-              }`}
+              className={`mb-4 p-2 text-sm rounded ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
             >
               {message.text}
             </div>
