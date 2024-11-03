@@ -1,98 +1,99 @@
 // components/ProductEntryForm.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import axios from 'axios'
+import { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import axios from 'axios';
 
-import { ref, get, push, set } from "firebase/database"
-import { database } from '@/lib/firebase'
+import { ref, get, push, set } from "firebase/database";
+import { database } from '@/lib/firebase';
 
 interface ServiceDetail {
-  id: string
-  name: string
-  description: string
-  price: number
-  createdAt: string
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  createdAt: string;
 }
 
 export function ProductEntryForm() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [products, setProducts] = useState<ServiceDetail[]>([])
-  const [filteredProducts, setFilteredProducts] = useState<ServiceDetail[]>([])
-  const [selectedProduct, setSelectedProduct] = useState<ServiceDetail | null>(null)
-  const [price, setPrice] = useState('')
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
-  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('');
+  const [products, setProducts] = useState<ServiceDetail[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<ServiceDetail[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<ServiceDetail | null>(null);
+  const [price, setPrice] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'online'>('cash'); // Added state
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Fetch products on component mount
   useEffect(() => {
     const fetchProducts = async () => {
-      const servicedetailsRef = ref(database, 'servicedetails')
+      const servicedetailsRef = ref(database, 'servicedetails');
       try {
-        const snapshot = await get(servicedetailsRef)
+        const snapshot = await get(servicedetailsRef);
         if (snapshot.exists()) {
-          const data = snapshot.val()
+          const data = snapshot.val();
           const productsList: ServiceDetail[] = Object.keys(data).map(key => ({
             id: key,
             name: data[key].name,
             description: data[key].description,
             price: data[key].price,
             createdAt: data[key].createdAt,
-          }))
-          setProducts(productsList)
+          }));
+          setProducts(productsList);
         } else {
-          setProducts([])
+          setProducts([]);
         }
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data:', error);
       }
-    }
+    };
 
-    fetchProducts()
-  }, [])
+    fetchProducts();
+  }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchTerm(value)
+    const value = e.target.value;
+    setSearchTerm(value);
     if (value.trim() === '') {
-      setFilteredProducts([])
-      setShowSuggestions(false)
-      return
+      setFilteredProducts([]);
+      setShowSuggestions(false);
+      return;
     }
 
     const filtered = products.filter(product =>
       product.name.toLowerCase().includes(value.toLowerCase())
-    )
-    setFilteredProducts(filtered)
-    setShowSuggestions(true)
-  }
+    );
+    setFilteredProducts(filtered);
+    setShowSuggestions(true);
+  };
 
   const handleSelectProduct = (product: ServiceDetail) => {
-    setSelectedProduct(product)
-    setPrice(product.price.toFixed(2))
-    setSearchTerm(product.name)
-    setShowSuggestions(false)
-    setMessage(null)
-  }
+    setSelectedProduct(product);
+    setPrice(product.price.toFixed(2));
+    setSearchTerm(product.name);
+    setShowSuggestions(false);
+    setMessage(null);
+  };
 
   const handleSell = async () => {
     if (!selectedProduct) {
-      setMessage({ type: 'error', text: "No product selected to sell." })
-      return
+      setMessage({ type: 'error', text: "No product selected to sell." });
+      return;
     }
 
     if (!price || parseFloat(price) < 0) {
-      setMessage({ type: 'error', text: "Please enter a valid price." })
-      return
+      setMessage({ type: 'error', text: "Please enter a valid price." });
+      return;
     }
 
-    const sellRef = ref(database, 'sell')
-    const newSellRef = push(sellRef)
+    const sellRef = ref(database, 'sell');
+    const newSellRef = push(sellRef);
 
     const sellData = {
       productId: selectedProduct.id,
@@ -101,27 +102,29 @@ export function ProductEntryForm() {
       price: parseFloat(price),
       phoneNumber: phoneNumber.trim() || null,
       soldAt: new Date().toISOString(),
-    }
+      paymentMethod, // Include payment method
+    };
 
     try {
-      await set(newSellRef, sellData)
+      await set(newSellRef, sellData);
 
       // Send WhatsApp message if phone number is provided
       if (phoneNumber.trim()) {
-        await sendWhatsAppMessage(selectedProduct.description, phoneNumber)
+        await sendWhatsAppMessage(selectedProduct.description, phoneNumber);
       }
 
-      setMessage({ type: 'success', text: "Product sold successfully." })
+      setMessage({ type: 'success', text: "Product sold successfully." });
       // Reset form
-      setSelectedProduct(null)
-      setPrice('')
-      setSearchTerm('')
-      setPhoneNumber('')
+      setSelectedProduct(null);
+      setPrice('');
+      setSearchTerm('');
+      setPhoneNumber('');
+      setPaymentMethod('cash'); // Reset payment method
     } catch (error) {
-      console.error('Error selling product:', error)
-      setMessage({ type: 'error', text: "Failed to sell product." })
+      console.error('Error selling product:', error);
+      setMessage({ type: 'error', text: "Failed to sell product." });
     }
-  }
+  };
 
   const sendWhatsAppMessage = async (message: string, phoneNumber: string) => {
     try {
@@ -136,7 +139,7 @@ export function ProductEntryForm() {
       console.error('Error sending WhatsApp message:', error);
       setMessage({ type: 'error', text: "Failed to send WhatsApp message." });
     }
-  }
+  };
 
   return (
     <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
@@ -222,6 +225,34 @@ export function ProductEntryForm() {
                     placeholder="Enter phone number"
                   />
                 </div>
+                {/* Payment Method Selection */}
+                <div>
+                  <Label className="block mb-1">Payment Method</Label>
+                  <div className="flex items-center space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="cash"
+                        checked={paymentMethod === 'cash'}
+                        onChange={() => setPaymentMethod('cash')}
+                        className="mr-2"
+                      />
+                      Cash
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="online"
+                        checked={paymentMethod === 'online'}
+                        onChange={() => setPaymentMethod('online')}
+                        className="mr-2"
+                      />
+                      Online
+                    </label>
+                  </div>
+                </div>
                 <Button
                   onClick={handleSell}
                   className="w-full bg-green-600 hover:bg-green-700 text-white"
@@ -234,7 +265,7 @@ export function ProductEntryForm() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 export default ProductEntryForm;

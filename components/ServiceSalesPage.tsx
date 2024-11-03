@@ -12,7 +12,7 @@ interface SellData {
   id: string;
   productId: string;
   name: string;
-  description: string;
+  paymentMethod: string;
   price: number;
   soldAt: string;
 }
@@ -71,7 +71,7 @@ const ServiceSalesPage: React.FC = () => {
   const totalSales = filteredSales.reduce((total, sale) => total + sale.price, 0);
 
   return (
-    <div className="flex flex-col h-screen overflow-y-auto bg-gray-50"> {/* Main container with overflow */}
+    <div className="flex flex-col h-screen overflow-y-auto bg-gray-50"> {/* Main container with overflow */ }
       <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-extrabold mb-6 text-center text-[#0a1963]">Service Sales Dashboard</h1>
         <Card className="mb-8 shadow-lg">
@@ -97,7 +97,7 @@ const ServiceSalesPage: React.FC = () => {
               </Button>
             </div>
             {filteredSales.length > 0 ? (
-              <div className="overflow-y-auto max-h-[400px]"> {/* Scrollable area within the card */}
+              <div className="overflow-y-auto max-h-[400px]"> {/* Scrollable area within the card */ }
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredSales.map((sale) => (
                     <Card
@@ -108,11 +108,11 @@ const ServiceSalesPage: React.FC = () => {
                         <CardTitle className="text-xl font-semibold text-[#0a1963]">{sale.name}</CardTitle>
                       </CardHeader>
                       <CardContent className="pt-4">
-                        <p className="text-gray-600 mb-2">{sale.description}</p>
                         <p className="font-semibold text-[#0a1963]">₹{sale.price.toFixed(2)}</p>
                         <p className="text-sm text-gray-500 mt-2">
                           {format(parseISO(sale.soldAt), 'dd MMM yyyy HH:mm')}
                         </p>
+                        <p className="text-sm text-gray-500 mt-2">Payment: {sale.paymentMethod}</p> {/* Payment Method */}
                       </CardContent>
                     </Card>
                   ))}
@@ -130,7 +130,7 @@ const ServiceSalesPage: React.FC = () => {
               <CardTitle className="text-xl">Full Service Sales Graph</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="max-h-[500px] overflow-y-auto"> {/* Scrollable area for the full service sales graph */}
+              <div className="max-h-[500px] overflow-y-auto"> {/* Scrollable area for the full service sales graph */ }
                 {sellData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={400}>
                     <BarChart data={sellData}>
@@ -154,7 +154,7 @@ const ServiceSalesPage: React.FC = () => {
               <CardTitle className="text-xl">Top Sold Services</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="max-h-[300px] overflow-y-auto"> {/* Scrollable area for the top sold services */}
+              <div className="max-h-[300px] overflow-y-auto"> {/* Scrollable area for the top sold services */ }
                 {mostSold.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={mostSold}>
@@ -175,7 +175,7 @@ const ServiceSalesPage: React.FC = () => {
               <CardTitle className="text-xl">Least Sold Services</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="max-h-[300px] overflow-y-auto"> {/* Scrollable area for the least sold services */}
+              <div className="max-h-[300px] overflow-y-auto"> {/* Scrollable area for the least sold services */ }
                 {leastSold.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={leastSold}>
@@ -202,7 +202,7 @@ const ServiceSalesPage: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold mb-4 text-[#0a1963]">Top Sold Services</h3>
                 {mostSold.length > 0 ? (
-                  <ul className="space-y-2 max-h-[200px] overflow-y-auto"> {/* Scrollable list of top sold services */}
+                  <ul className="space-y-2 max-h-[200px] overflow-y-auto"> {/* Scrollable list of top sold services */ }
                     {mostSold.map((product, index) => (
                       <li
                         key={index}
@@ -220,7 +220,7 @@ const ServiceSalesPage: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold mb-4 text-[#0a1963]">Least Sold Services</h3>
                 {leastSold.length > 0 ? (
-                  <ul className="space-y-2 max-h-[200px] overflow-y-auto"> {/* Scrollable list of least sold services */}
+                  <ul className="space-y-2 max-h-[200px] overflow-y-auto"> {/* Scrollable list of least sold services */ }
                     {leastSold.map((product, index) => (
                       <li
                         key={index}

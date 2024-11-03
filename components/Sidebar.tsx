@@ -1,4 +1,3 @@
-// components/Sidebar.tsx
 'use client';
 
 import Link from 'next/link';
@@ -29,7 +28,7 @@ const navLinks: NavLink[] = [
   { label: 'Product List', icon: <BarChart size={20} />, href: '/productlist' },
   { label: 'Add Product', icon: <Briefcase size={20} />, href: '/product' },
   { label: 'Service Sell', icon: <Settings size={20} />, href: '/servicesselllist' },
-
+  // Add more nav links as needed
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
@@ -37,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
   return (
     <aside
-      className={`bg-[#0a1963] text-white w-64 min-h-screen transition-transform duration-300 transform ${
+      className={`bg-[#0a1963] text-white w-64 min-h-screen transition-transform duration-300 transform overflow-y-auto ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } fixed md:relative z-50`}
     >
