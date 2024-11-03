@@ -427,6 +427,9 @@ interface SellTableProps {
 /**
  * Component representing the sell records table.
  */
+/**
+ * Component representing the sell records table.
+ */
 const SellTable: React.FC<SellTableProps> = ({ sells }) => (
   <>
     {sells.length > 0 ? (
@@ -435,7 +438,6 @@ const SellTable: React.FC<SellTableProps> = ({ sells }) => (
           <thead>
             <tr>
               <th className="py-2 px-4 border-b">Product Name</th>
-              <th className="py-2 px-4 border-b">Description</th>
               <th className="py-2 px-4 border-b">Price (Rs.)</th>
               <th className="py-2 px-4 border-b">Payment Method</th>
               <th className="py-2 px-4 border-b">Phone Number</th>
@@ -446,7 +448,6 @@ const SellTable: React.FC<SellTableProps> = ({ sells }) => (
             {sells.map((sell) => (
               <tr key={sell.id}>
                 <td className="py-2 px-4 border-b">{sell.name}</td>
-                <td className="py-2 px-4 border-b">{sell.description}</td>
                 <td className="py-2 px-4 border-b">{sell.price.toFixed(2)}</td>
                 <td className="py-2 px-4 border-b capitalize">{sell.paymentMethod}</td>
                 <td className="py-2 px-4 border-b">{sell.phoneNumber || 'N/A'}</td>
@@ -468,5 +469,6 @@ const SellTable: React.FC<SellTableProps> = ({ sells }) => (
     </div>
   </>
 );
+
 
 export default DashboardContent;
