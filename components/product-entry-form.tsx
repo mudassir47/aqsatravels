@@ -7,16 +7,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import axios from 'axios';
-import thumbnail from "@/public/aqsa.png"; // Ensure this image is publicly accessible
 import { ref, get, push, set } from "firebase/database";
 import { database } from '@/lib/firebase';
+// Removed unused import
+// import thumbnail from "@/public/aqsa.png"
 
+/**
+ * Interface representing the details of a service/product.
+ */
 interface ServiceDetail {
   id: string;
   name: string;
   description: string;
   price: number;
   createdAt: string;
+}
+
+/**
+ * Interface representing the data of a sold product.
+ */
+interface SellData {
+  productId: string;
+  name: string;
+  description: string;
+  price: number;
+  phoneNumber: string | null;
+  soldAt: string;
+  paymentMethod: 'cash' | 'online';
 }
 
 export function ProductEntryForm() {
@@ -95,7 +112,7 @@ export function ProductEntryForm() {
     const sellRef = ref(database, 'sell');
     const newSellRef = push(sellRef);
 
-    const sellData = {
+    const sellData: SellData = {
       productId: selectedProduct.id,
       name: selectedProduct.name,
       description: selectedProduct.description,
@@ -109,8 +126,8 @@ export function ProductEntryForm() {
       await set(newSellRef, sellData);
 
       // Send WhatsApp message if phone number is provided
-      if (phoneNumber.trim()) {
-        await sendWhatsAppMessage(selectedProduct.description, phoneNumber);
+      if (sellData.phoneNumber) {
+        await sendWhatsAppMessage(sellData, sellData.phoneNumber);
       }
 
       setMessage({ type: 'success', text: "Product sold successfully." });
@@ -126,36 +143,63 @@ export function ProductEntryForm() {
     }
   };
 
-  const sendWhatsAppMessage = async (messageText: string, phoneNumber: string) => {
-    // Replace with your actual public URL where aqsa.png is hosted
-    const mediaUrl = `${window.location.origin}${thumbnail.src}`;
-
-    const payload = {
-      number: phoneNumber,
-      type: "media",
-      message: messageText,
-      media_url: mediaUrl,
-      instance_id: "6728BD5448232",
-      access_token: "67277e6184833"
-    };
-
+  /**
+   * Sends a professional invoice message via WhatsApp.
+   * @param sellData The data related to the sold product.
+   * @param phoneNumber The recipient's phone number.
+   */
+  const sendWhatsAppMessage = async (sellData: SellData, phoneNumber: string) => {
     try {
-      const response = await axios.post('https://adrika.aknexus.in/api/send', payload, {
+      // Craft a professional invoice message
+      const invoiceMessage = `
+Hello,
+
+*Thank you for your purchase!* Here are your invoice details:
+
+*Product Name:* ${sellData.name}
+*Description:* ${sellData.description}
+*Price:* ₹${sellData.price.toFixed(2)}
+*Payment Method:* ${capitalizeFirstLetter(sellData.paymentMethod)}
+*Date:* ${new Date(sellData.soldAt).toLocaleString()}
+
+If you have any *questions,* feel free to contact us.
+
+Best regards,
+*AQSA TRAVELS*
+      `.trim();
+
+      const payload = {
+        number: phoneNumber,
+        message: invoiceMessage,
+        type: "media",
+        media_url: "https://raw.githubusercontent.com/mudassir47/public/refs/heads/main/aqsa.png" // Keeping the same image URL
+      };
+
+      const response = await axios.post('/api/send-whatsapp', payload, {
         headers: {
           'Content-Type': 'application/json'
         }
       });
 
       if (response.data.success) {
-        console.log('Message sent successfully');
+        console.log('Invoice message sent successfully');
       } else {
-        console.error('Failed to send message:', response.data);
-        setMessage({ type: 'error', text: "Failed to send WhatsApp message." });
+        console.error('Failed to send invoice message:', response.data.message);
+        setMessage({ type: 'error', text: "Failed to send WhatsApp invoice message." });
       }
-    } catch (error) {
-      console.error('Error sending WhatsApp message:', error);
-      setMessage({ type: 'error', text: "Failed to send WhatsApp message." });
+    } catch (error: any) {
+      console.error('Error sending WhatsApp invoice message:', error.response?.data?.message || error.message);
+      setMessage({ type: 'error', text: "Failed to send WhatsApp invoice message." });
     }
+  };
+
+  /**
+   * Capitalizes the first letter of a string.
+   * @param str The string to capitalize.
+   * @returns The capitalized string.
+   */
+  const capitalizeFirstLetter = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
   };
 
   return (
