@@ -167,6 +167,20 @@ const DashboardContent: React.FC = () => {
     .filter(sell => sell.paymentMethod === 'online')
     .reduce((acc, sell) => acc + sell.price, 0);
 
+  // **New Additions Start Here**
+
+  // Calculate Today's Cash Sales
+  const todayCashSales = todaySells
+    .filter(sell => sell.paymentMethod === 'cash')
+    .reduce((acc, sell) => acc + sell.price, 0);
+
+  // Calculate Today's Online Sales
+  const todayOnlineSales = todaySells
+    .filter(sell => sell.paymentMethod === 'online')
+    .reduce((acc, sell) => acc + sell.price, 0);
+
+  // **New Additions End Here**
+
   const lineChartData: ChartData[] = Array.from({ length: 12 }, (_, index) => {
     const month = new Date(0, index).toLocaleString('default', { month: 'short' });
     const monthlyCashTotal = filteredSells
@@ -266,7 +280,7 @@ const DashboardContent: React.FC = () => {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6">
           <StatCard
             title="Total Sells Today"
             icon={Briefcase}
@@ -291,6 +305,21 @@ const DashboardContent: React.FC = () => {
             value={`Rs. ${totalOnlineSales.toFixed(2)}`}
             subvalue={`${filteredSells.filter(sell => sell.paymentMethod === 'online').length} Transactions`}
           />
+          
+          {/* **New Cards Start Here** */}
+          <StatCard
+            title="Today Total Cash"
+            icon={DollarSign}
+            value={`Rs. ${todayCashSales.toFixed(2)}`}
+            subvalue={`${todaySells.filter(sell => sell.paymentMethod === 'cash').length} Transactions`}
+          />
+          <StatCard
+            title="Today Total Online"
+            icon={CreditCard}
+            value={`Rs. ${todayOnlineSales.toFixed(2)}`}
+            subvalue={`${todaySells.filter(sell => sell.paymentMethod === 'online').length} Transactions`}
+          />
+          {/* **New Cards End Here** */}
         </div>
 
         {/* Charts */}
@@ -427,9 +456,6 @@ interface SellTableProps {
 /**
  * Component representing the sell records table.
  */
-/**
- * Component representing the sell records table.
- */
 const SellTable: React.FC<SellTableProps> = ({ sells }) => (
   <>
     {sells.length > 0 ? (
@@ -469,6 +495,5 @@ const SellTable: React.FC<SellTableProps> = ({ sells }) => (
     </div>
   </>
 );
-
 
 export default DashboardContent;

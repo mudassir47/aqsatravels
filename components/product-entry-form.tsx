@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios'; // Updated import
 import { ref, get, push, set } from "firebase/database";
 import { database } from '@/lib/firebase';
 // Removed unused import
@@ -34,6 +34,15 @@ interface SellData {
   phoneNumber: string | null;
   soldAt: string;
   paymentMethod: 'cash' | 'online';
+}
+
+/**
+ * Interface representing the structure of the WhatsApp API response.
+ */
+interface WhatsAppApiResponse {
+  success: boolean;
+  message: string;
+  [key: string]: unknown; // Replaced 'any' with 'unknown'
 }
 
 export function ProductEntryForm() {
@@ -137,7 +146,7 @@ export function ProductEntryForm() {
       setSearchTerm('');
       setPhoneNumber('');
       setPaymentMethod('cash'); // Reset payment method
-    } catch (error) {
+    } catch (error: unknown) { // Changed from any to unknown
       console.error('Error selling product:', error);
       setMessage({ type: 'error', text: "Failed to sell product." });
     }
@@ -175,7 +184,7 @@ Best regards,
         media_url: "https://raw.githubusercontent.com/mudassir47/public/refs/heads/main/aqsa.png" // Keeping the same image URL
       };
 
-      const response = await axios.post('/api/send-whatsapp', payload, {
+      const response = await axios.post<WhatsAppApiResponse>('/api/send-whatsapp', payload, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -187,9 +196,17 @@ Best regards,
         console.error('Failed to send invoice message:', response.data.message);
         setMessage({ type: 'error', text: "Failed to send WhatsApp invoice message." });
       }
-    } catch (error: any) {
-      console.error('Error sending WhatsApp invoice message:', error.response?.data?.message || error.message);
-      setMessage({ type: 'error', text: "Failed to send WhatsApp invoice message." });
+    } catch (error: unknown) { // Changed from any to unknown
+      if (isAxiosError(error)) { // Use isAxiosError directly
+        console.error('Axios Error:', error.response?.data?.message || error.message);
+        setMessage({ type: 'error', text: "Failed to send WhatsApp invoice message." });
+      } else if (error instanceof Error) {
+        console.error('General Error:', error.message);
+        setMessage({ type: 'error', text: "Failed to send WhatsApp invoice message." });
+      } else {
+        console.error('Unexpected Error:', error);
+        setMessage({ type: 'error', text: "Failed to send WhatsApp invoice message." });
+      }
     }
   };
 
@@ -211,7 +228,11 @@ Best regards,
         <CardContent className="pt-6">
           {message && (
             <div
-              className={`mb-4 p-2 text-sm rounded ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+              className={`mb-4 p-2 text-sm rounded ${
+                message.type === 'success'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-red-100 text-red-800'
+              }`}
             >
               {message.text}
             </div>

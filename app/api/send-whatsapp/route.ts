@@ -2,7 +2,8 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import axios from 'axios';
+import axios, { AxiosError, isAxiosError } from 'axios';
+
 // If you plan to use a local image, ensure it's accessible via a public URL or adjust accordingly.
 // import img from "@/public/aqsa.png"; // Not used in this example
 
@@ -14,9 +15,20 @@ interface SendWhatsAppRequest {
   filename?: string;  // Required if type is 'media' and sending a document
 }
 
-interface SendWhatsAppResponse {
+interface WhatsAppPayload {
+  number: string;
+  type: 'text' | 'media';
+  message: string;
+  instance_id: string;
+  access_token: string;
+  media_url?: string;
+  filename?: string;
+}
+
+interface ApiResponse {
   success: boolean;
   message: string;
+  [key: string]: unknown; // Replaced 'any' with 'unknown'
 }
 
 export async function POST(request: NextRequest) {
@@ -51,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Construct payload based on message type
-    let payload: any = {
+    const payload: WhatsAppPayload = {
       number: number,
       type: type,
       message: message,
@@ -70,7 +82,7 @@ export async function POST(request: NextRequest) {
     const apiEndpoint = 'https://adrika.aknexus.in/api/send';
 
     // Send POST request to the WhatsApp API
-    const apiResponse = await axios.post(apiEndpoint, payload, {
+    const apiResponse = await axios.post<ApiResponse>(apiEndpoint, payload, {
       headers: {
         'Content-Type': 'application/json'
       }
@@ -89,10 +101,23 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-  } catch (error: any) {
-    console.error('Error in send-whatsapp API:', error.response?.data || error.message);
+  } catch (error: unknown) {
+    let errorMessage = 'An error occurred while sending the message.';
+
+    if (isAxiosError(error)) {
+      const axiosError = error as AxiosError<ApiResponse>;
+      console.error('Axios Error:', axiosError.response?.data || axiosError.message);
+      if (axiosError.response?.data?.message && typeof axiosError.response.data.message === 'string') {
+        errorMessage = axiosError.response.data.message;
+      }
+    } else if (error instanceof Error) {
+      console.error('General Error:', error.message);
+    } else {
+      console.error('Unexpected Error:', error);
+    }
+
     return NextResponse.json(
-      { success: false, message: 'An error occurred while sending the message.' },
+      { success: false, message: errorMessage },
       { status: 500 }
     );
   }
