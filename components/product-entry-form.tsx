@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import axios from 'axios';
-
+import thumbnail from "@/public/aqsa.png"; // Ensure this image is publicly accessible
 import { ref, get, push, set } from "firebase/database";
 import { database } from '@/lib/firebase';
 
@@ -126,14 +126,31 @@ export function ProductEntryForm() {
     }
   };
 
-  const sendWhatsAppMessage = async (message: string, phoneNumber: string) => {
+  const sendWhatsAppMessage = async (messageText: string, phoneNumber: string) => {
+    // Replace with your actual public URL where aqsa.png is hosted
+    const mediaUrl = `${window.location.origin}${thumbnail.src}`;
+
+    const payload = {
+      number: phoneNumber,
+      type: "media",
+      message: messageText,
+      media_url: mediaUrl,
+      instance_id: "6728BD5448232",
+      access_token: "67277e6184833"
+    };
+
     try {
-      const response = await axios.post('http://localhost:5000/send-message', {
-        phoneNumber,
-        message,
+      const response = await axios.post('https://adrika.aknexus.in/api/send', payload, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
+
       if (response.data.success) {
         console.log('Message sent successfully');
+      } else {
+        console.error('Failed to send message:', response.data);
+        setMessage({ type: 'error', text: "Failed to send WhatsApp message." });
       }
     } catch (error) {
       console.error('Error sending WhatsApp message:', error);
