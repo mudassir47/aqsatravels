@@ -55,6 +55,7 @@ export function ProductEntryForm() {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'online'>('cash'); // Added state
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // New loading state
 
   // Fetch products on component mount
   useEffect(() => {
@@ -118,6 +119,8 @@ export function ProductEntryForm() {
       return;
     }
 
+    setIsLoading(true); // Start loading
+
     const sellRef = ref(database, 'sell');
     const newSellRef = push(sellRef);
 
@@ -149,6 +152,8 @@ export function ProductEntryForm() {
     } catch (error: unknown) { // Changed from any to unknown
       console.error('Error selling product:', error);
       setMessage({ type: 'error', text: "Failed to sell product." });
+    } finally {
+      setIsLoading(false); // End loading
     }
   };
 
@@ -338,8 +343,19 @@ Best regards,
                 <Button
                   onClick={handleSell}
                   className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  disabled={isLoading} // Disable button when loading
                 >
-                  Sell Product
+                  {isLoading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5 mr-3 border-t-2 border-b-2 border-white rounded-full"
+                        viewBox="0 0 24 24"
+                      ></svg>
+                      Selling...
+                    </>
+                  ) : (
+                    "Sell Product"
+                  )}
                 </Button>
               </div>
             )}
